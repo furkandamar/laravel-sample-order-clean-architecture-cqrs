@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Cache;
 
 class GetDiscountQuery
 {
-    public function __construct(public $orderPackageId) {}
+    public function __construct(public $customerId, public $orderPackageId) {}
 }
 
 class GetDiscountQueryHandler
@@ -16,6 +16,6 @@ class GetDiscountQueryHandler
 
     public function handle(GetDiscountQuery $query)
     {
-        return $this->orderService->getDiscount($query->orderPackageId);
+        return $this->orderService->getDiscount($query->customerId, $query->orderPackageId);
     }
 }

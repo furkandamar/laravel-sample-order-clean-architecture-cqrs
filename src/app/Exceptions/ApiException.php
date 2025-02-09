@@ -15,6 +15,9 @@ class ApiException extends Exception
             );
         }
 
-        return response()->view('errors.default', ['exception' => $this], 500);
+        return response()->json([
+            'message' => $this->getMessage(),
+            'code' => $this->getCode() ?: 400
+        ], $this->getCode() ?: 400);
     }
 }

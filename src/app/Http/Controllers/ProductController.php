@@ -21,11 +21,7 @@ class ProductController extends Controller
      *     tags={"Products"},
      *     @OA\Response(
      *         response=200,
-     *         description="Successful operation",
-     *         @OA\JsonContent(
-     *             type="array",
-     *             @OA\Items(ref="App/Models/CategoryModel")
-     *         )
+     *         description="Successful operation"
      *     ),
      *     @OA\Response(
      *         response=400,
@@ -54,11 +50,7 @@ class ProductController extends Controller
      *      ),
      *     @OA\Response(
      *         response=200,
-     *         description="Successful operation",
-     *         @OA\JsonContent(
-     *             type="array",
-     *             @OA\Items(ref="/App/Models/ProductModel")
-     *         )
+     *         description="Successful operation"
      *     ),
      *     @OA\Response(
      *         response=400,

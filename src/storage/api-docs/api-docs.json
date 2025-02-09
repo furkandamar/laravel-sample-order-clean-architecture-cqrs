@@ -1,8 +1,7 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "title": "Sipariş API",
-        "description": "Sipariş API belgelendirmesi",
+        "title": "Swagger with Laravel",
         "version": "1.0.0"
     },
     "servers": [
@@ -47,14 +46,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Successful operation",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "\\Illuminate\\Http\\JsonResponse"
-                                }
-                            }
-                        }
+                        "description": "Successful operation"
                     },
                     "400": {
                         "description": "Bad request"
@@ -71,19 +63,17 @@
                 "operationId": "me",
                 "responses": {
                     "200": {
-                        "description": "Successful operation",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "\\App\\Models\\User"
-                                }
-                            }
-                        }
+                        "description": "Successful operation"
                     },
                     "400": {
                         "description": "Bad request"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/orders": {
@@ -91,28 +81,26 @@
                 "tags": [
                     "Orders"
                 ],
-                "summary": "Yeni sipariş oluştur",
+                "summary": "Sipariş paket veya sipariş içeriklerini döner",
                 "operationId": "b2fecac9dec0cdfa315b817cbb0066e0",
                 "parameters": [
                     {
-                        "name": "order_package_id",
-                        "in": "query",
+                        "name": "orderPackageId",
+                        "in": "path",
                         "description": "Order Package UUID",
                         "required": false
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Sipariş listesi hazırlandı",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "/App/Models/OrderPackageModel"
-                                }
-                            }
-                        }
+                        "description": "Sipariş listesi hazırlandı"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "post": {
                 "tags": [
@@ -149,28 +137,26 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Sipariş başarıyla oluşturuldu",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "/App/Models/OrderModel"
-                                }
-                            }
-                        }
+                        "description": "Sipariş başarıyla oluşturuldu"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
-        "/discount": {
+        "/discount/{orderPackageId}": {
             "get": {
                 "tags": [
                     "Orders"
                 ],
                 "summary": "İndirim listesini döner",
-                "operationId": "c91f73c9843cd7f39312c0d778127fed",
+                "operationId": "85eedfa9525dc109ccee48677598989e",
                 "parameters": [
                     {
-                        "name": "order_package_id",
+                        "name": "orderPackageId",
                         "in": "path",
                         "description": "Order Package UUID",
                         "required": true
@@ -178,16 +164,41 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Sipariş listesi hazırlandı",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "/App/Models/OrderDiscountModel"
-                                }
-                            }
-                        }
+                        "description": "Sipariş listesi hazırlandı"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/orders/{orderPackageId}": {
+            "delete": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Siparişi iptal eder",
+                "operationId": "5b3f836b5b204ec292b83428a0112369",
+                "parameters": [
+                    {
+                        "name": "orderPackageId",
+                        "in": "path",
+                        "description": "Order Package UUID",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sipariş paketi silindi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/categories": {
@@ -200,17 +211,7 @@
                 "operationId": "getCategories",
                 "responses": {
                     "200": {
-                        "description": "Successful operation",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "App/Models/CategoryModel"
-                                    }
-                                }
-                            }
-                        }
+                        "description": "Successful operation"
                     },
                     "400": {
                         "description": "Bad request"
@@ -236,17 +237,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successful operation",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "/App/Models/ProductModel"
-                                    }
-                                }
-                            }
-                        }
+                        "description": "Successful operation"
                     },
                     "400": {
                         "description": "Bad request"
@@ -255,14 +246,23 @@
             }
         }
     },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
     "tags": [
-        {
-            "name": "Orders",
-            "description": "Sipariş işlemleri"
-        },
         {
             "name": "Auth",
             "description": "Auth"
+        },
+        {
+            "name": "Orders",
+            "description": "Orders"
         },
         {
             "name": "Products",

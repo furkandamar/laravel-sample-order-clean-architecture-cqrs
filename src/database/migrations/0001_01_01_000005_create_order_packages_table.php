@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreign('customer_id')->references('id')->on(DbTableNameConstant::CUSTOMER);
             $table->decimal('discount')->default(0.0);
             $table->decimal('total');
+            $table->boolean('is_deleted')->default(false);
             $table->timestamps();
         });
     }

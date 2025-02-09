@@ -3,30 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ApiResponse;
-use App\Infrastructure\Abstraction\Service\IOrderService;
 use App\Infrastructure\Handlers\Commands\CreateOrderCommand;
-use App\Infrastructure\Handlers\Commands\CreateOrderCommandHandler;
 use App\Infrastructure\Handlers\HandlerBus;
 use Illuminate\Http\Request;
-use Tymon\JWTAuth\Exceptions\JWTException;
-use Tymon\JWTAuth\Facades\JWTAuth;
-
-use App\Http\Controllers\AuthorizeController as BaseController;
+use App\Infrastructure\Handlers\Commands\CancelOrderCommand;
+use App\Infrastructure\Handlers\Commands\UpdateOrderCommand;
 use App\Infrastructure\Handlers\Queries\GetDiscountQuery;
 use App\Infrastructure\Handlers\Queries\GetOrderHistoryQuery;
 
-/**
- * @OA\Info(
- *      title="Sipariş API",
- *      version="1.0.0",
- *      description="Sipariş API belgelendirmesi"
- * )
- *
- * @OA\Tag(
- *     name="Orders",
- *     description="Sipariş işlemleri"
- * )
- */
 class OrderController extends Controller
 {
 
@@ -50,9 +34,9 @@ class OrderController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Sipariş başarıyla oluşturuldu",
-     *         @OA\JsonContent(ref="/App/Models/OrderModel")
-     *     )
+     *         description="Sipariş başarıyla oluşturuldu"
+     *     ),
+     *      security={{"bearerAuth":{}}}
      * )
      */
     public function createOrder(Request $request)
@@ -66,49 +50,97 @@ class OrderController extends Controller
     /**
      * @OA\Get(
      *     path="/orders",
-     *     summary="Yeni sipariş oluştur",
+     *     summary="Sipariş paket veya sipariş içeriklerini döner",
      *     tags={"Orders"},
      *      @OA\Parameter(
-     *         name="order_package_id",
-     *         in="query",
+     *         name="orderPackageId",
+     *         in="path",
      *         description="Order Package UUID",
      *         required=false,
      *      ),
      *     @OA\Response(
      *         response=200,
-     *         description="Sipariş listesi hazırlandı",
-     *         @OA\JsonContent(ref="/App/Models/OrderPackageModel")
-     *     )
+     *         description="Sipariş listesi hazırlandı"
+     *     ),
+     *       security={{"bearerAuth":{}}}
      * )
      */
-    public function getOrders(Request $request)
+    public function getOrders(Request $request, $orderPackageId = null)
     {
-        $query = new GetOrderHistoryQuery($request->attributes->get('customer')->id, $request->input('order_package_id'));
+        $query = new GetOrderHistoryQuery($request->attributes->get('customer')->id, $orderPackageId);
         $data = $this->handlerBus->handle($query);
         return ApiResponse::success($data);
     }
 
     /**
      * @OA\Get(
-     *     path="/discount",
+     *     path="/discount/{orderPackageId}",
      *     summary="İndirim listesini döner",
      *     tags={"Orders"},
      *      @OA\Parameter(
-     *         name="order_package_id",
+     *         name="orderPackageId",
      *         in="path",
      *         description="Order Package UUID",
      *         required=true,
      *      ),
      *     @OA\Response(
      *         response=200,
-     *         description="Sipariş listesi hazırlandı",
-     *         @OA\JsonContent(ref="/App/Models/OrderDiscountModel")
-     *     )
+     *         description="Sipariş listesi hazırlandı"
+     *     ),
+     *       security={{"bearerAuth":{}}}
      * )
      */
-    public function getDiscount($orderPackageId)
+    public function getDiscount(Request $request, $orderPackageId)
     {
-        $data = $this->handlerBus->handle(new GetDiscountQuery($orderPackageId));
+        $data = $this->handlerBus->handle(new GetDiscountQuery($request->attributes->get('customer')->id, $orderPackageId));
+        return ApiResponse::success($data);
+    }
+
+    /**
+     * @OA\Put(
+     *     path="/orders/{orderPackageId}",
+     *     summary="Siparişi günceller",
+     *     tags={"Orders"},
+     *      @OA\Parameter(
+     *         name="orderPackageId",
+     *         in="path",
+     *         description="Order Package UUID",
+     *         required=true,
+     *      ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Sipariş paketi güncellendi"
+     *     ),
+     *       security={{"bearerAuth":{}}}
+     * )
+     */
+    public function updateOrderPackage(Request $request, $orderPackageId)
+    {
+        $data = $this->handlerBus->handle(new UpdateOrderCommand($request->attributes->get('customer')->id, $orderPackageId, $request->all()));
+        return ApiResponse::success($data);
+    }
+
+    /**
+     * @OA\Delete(
+     *     path="/orders/{orderPackageId}",
+     *     summary="Siparişi iptal eder",
+     *     tags={"Orders"},
+     *      @OA\Parameter(
+     *         name="orderPackageId",
+     *         in="path",
+     *         description="Order Package UUID",
+     *         required=true,
+     *      ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Sipariş paketi silindi"
+     *     ),
+     *       security={{"bearerAuth":{}}}
+     * )
+     */
+    public function cancelOrderPackage(Request $request, $orderPackageId)
+    {
+        $data = $this->handlerBus->handle(new CancelOrderCommand($request->attributes->get('customer')->id, $orderPackageId));
         return ApiResponse::success($data);
     }
 }

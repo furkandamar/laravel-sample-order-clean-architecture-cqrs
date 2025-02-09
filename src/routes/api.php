@@ -17,10 +17,10 @@ Route::middleware([LogRequestResponse::class])->group(function () {
     Route::middleware([JwtMiddleware::class])->group(function () {
         Route::get("/me", [AuthController::class, "me"]);
 
-
-        Route::get("/orders", [OrderController::class, "getOrders"]);
+        Route::get("/orders/{orderPackageId?}", [OrderController::class, "getOrders"]);
         Route::post("/orders", [OrderController::class, "createOrder"]);
-
-        Route::get("/discount/{order_package_id}", [OrderController::class, "getDiscount"]);
+        Route::put("/orders/{orderPackageId}", [OrderController::class, "updateOrderPackage"]);
+        Route::delete("/orders/{orderPackageId}", [OrderController::class, "cancelOrderPackage"]);
+        Route::get("/discount/{orderPackageId}", [OrderController::class, "getDiscount"]);
     });
 });

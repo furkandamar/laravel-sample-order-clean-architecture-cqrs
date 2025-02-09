@@ -6,12 +6,7 @@ use App\Helpers\ApiResponse;
 use App\Infrastructure\Handlers\Commands\GetMeQuery;
 use App\Infrastructure\Handlers\Commands\LoginCommand;
 use App\Infrastructure\Handlers\HandlerBus;
-use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
-use Tymon\JWTAuth\Facades\JWTAuth;
-use Tymon\JWTAuth\Exceptions\JWTException;
 
 
 class AuthController extends Controller
@@ -45,10 +40,7 @@ class AuthController extends Controller
      *      ),
      *     @OA\Response(
      *         response=200,
-     *         description="Successful operation",
-     *         @OA\JsonContent(
-     *             ref="\Illuminate\Http\JsonResponse"
-     *         )
+     *         description="Successful operation"
      *     ),
      *     @OA\Response(
      *         response=400,
@@ -71,15 +63,13 @@ class AuthController extends Controller
      *     tags={"Auth"},
      *     @OA\Response(
      *         response=200,
-     *         description="Successful operation",
-     *         @OA\JsonContent(
-     *             ref="\App\Models\User"
-     *         )
+     *         description="Successful operation"
      *     ),
      *     @OA\Response(
      *         response=400,
      *         description="Bad request"
-     *     )
+     *     ),
+     *      security={{"bearerAuth":{}}}
      * )
      */
     public function me(Request $request)

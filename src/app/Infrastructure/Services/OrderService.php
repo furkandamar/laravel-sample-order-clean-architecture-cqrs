@@ -19,18 +19,28 @@ use Illuminate\Support\Facades\DB;
 
 class OrderService implements IOrderService
 {
+
+    private function getCustomer($customerId)
+    {
+        $customer = CustomerModel::find($customerId);
+        if (!$customer) {
+            throw new ApiException("Müşteri bulunamadı");
+        }
+        return $customer;
+    }
+
     public function createOrder($customerId, $payload)
     {
         try {
             DB::beginTransaction();
 
-            $user = CustomerModel::find($customerId);
+            $customer = $this->getCustomer($customerId);
 
             $productIds = collect($payload)->pluck('product_id');
             $products = ProductModel::find($productIds)->keyBy('id');
 
             if ($products->count() == 0) {
-                throw new \Exception("Ürün bulunamadı");
+                throw new ApiException("Ürün bulunamadı");
             }
 
             $quantities = collect($payload)
@@ -44,22 +54,25 @@ class OrderService implements IOrderService
                 'customer_id' => $customerId,
             ]);
 
-            $orderDto = $this->fillOrders($quantities, $products, $orderPackage);
+            $orderDto = $this->fillOrderAndUpdateStock($quantities, $products, $orderPackage);
 
             $totalDiscount = $this->checkAndApproveDiscount($orderDto);
 
             $packageTotal = collect($orderDto)->sum('total') - $totalDiscount;
 
-            if ($user->balance < $packageTotal) {
-                throw new \Exception("Bakiye yetersiz");
+            if ($customer->balance < $packageTotal) {
+                throw new ApiException("Bakiye yetersiz");
             }
 
             $orderPackage->discount = $totalDiscount;
             $orderPackage->total = $packageTotal;
             $orderPackage->save();
 
-            $user->balance -= $packageTotal;
-            $user->save();
+            $customer->balance -= $packageTotal;
+            $customer->save();
+
+            $this->clearCache();
+
             DB::commit();
 
             return new OrderPackageResponse(
@@ -71,11 +84,97 @@ class OrderService implements IOrderService
             );
         } catch (\Exception $e) {
             DB::rollBack();
-            throw new \Exception($e->getMessage());
+            throw new ApiException($e->getMessage());
         }
     }
 
-    protected function fillOrders($quantities, $products, $orderPackage)
+    public function updateOrderPackage($customerId, $orderPackageId, $payload)
+    {
+        try {
+            DB::beginTransaction();
+
+            $customer = $this->getCustomer($customerId);
+
+            $orderPackage = OrderPackageModel::where('customer_id', $customerId)
+                ->where('id', $orderPackageId)
+                ->where('is_deleted', false)
+                ->first();
+
+            if (!$orderPackage) {
+                throw new ApiException("Sipariş paketi bulunamadı");
+            }
+
+
+            //Önce siparişi iadet et ve stokları geri al
+            $orders = OrderModel::where('order_package_id', $orderPackageId)->get();
+
+            foreach ($orders as $order) {
+                $product = ProductModel::find($order->product_id);
+                $product->stock += $order->quantity;
+                $product->save();
+
+                OrderDiscountModel::where('order_id', $order->id)->delete();
+                $order->delete();
+            }
+
+            $customer->balance += $orderPackage->total;
+
+            //Sipariş içeriğini yeniden oluştur
+            $productIds = collect($payload)->pluck('product_id');
+            $products = ProductModel::find($productIds)->keyBy('id');
+
+            if ($products->count() == 0) {
+                throw new ApiException("Ürün bulunamadı");
+            }
+
+            $quantities = collect($payload)
+                ->groupBy('product_id')
+                ->map(fn($group) => $group->sum('amount'));
+
+            $packageTotal = 0.0;
+
+            $orderDto = $this->fillOrderAndUpdateStock($quantities, $products, $orderPackage);
+
+            $totalDiscount = $this->checkAndApproveDiscount($orderDto);
+
+            $packageTotal = collect($orderDto)->sum('total') - $totalDiscount;
+
+            if ($customer->balance < $packageTotal) {
+                throw new ApiException("Bakiye yetersiz");
+            }
+
+            $orderPackage->discount = $totalDiscount;
+            $orderPackage->total = $packageTotal;
+            $orderPackage->save();
+
+            $customer->balance -= $packageTotal;
+            $customer->save();
+
+            $this->clearCache();
+
+            DB::commit();
+
+            return new OrderPackageResponse(
+                $orderPackage->id,
+                count($orderDto),
+                $totalDiscount,
+                $orderPackage->total,
+                $orderPackage->created_at->timestamp
+            );
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw new ApiException($e->getMessage());
+        }
+    }
+
+    protected function clearCache()
+    {
+        Cache::forget("order_package:*");
+        Cache::forget("products_all:*");
+        Cache::forget("products_all:*");
+    }
+
+    protected function fillOrderAndUpdateStock($quantities, $products, $orderPackage)
     {
         $orderDto = [];
 
@@ -83,7 +182,7 @@ class OrderService implements IOrderService
             $product = $products[$productId];
 
             if ($quantity > $product->stock) {
-                throw new \Exception("Stok yetersiz");
+                throw new ApiException("Stok yetersiz");
             }
 
             $orderTotal = $quantity * $product->price;
@@ -203,7 +302,7 @@ class OrderService implements IOrderService
             $totalAmount = collect($allOrder)->sum('total');
             $totalDiscount = $totalAmount * $discountModel->discount_value / 100.0;
         } else {
-            return $order;
+            return $totalDiscount;
         }
 
         OrderDiscountModel::create([
@@ -222,6 +321,18 @@ class OrderService implements IOrderService
             "order_package:%s",
             $orderPackageId ?? 'all'
         );
+
+        if ($orderPackageId) {
+            $orderPackage = OrderPackageModel::where('customer_id', $customerId)
+                ->where('id', $orderPackageId)
+                ->where('is_deleted', false)
+                ->first();
+
+            if (!$orderPackage) {
+                throw new ApiException("Sipariş paketi bulunamadı");
+            }
+        }
+
         return Cache::remember($cacheKey, 60, function () use ($orderPackageId, $customerId) {
             if ($orderPackageId) {
                 $entity =  OrderModel::where('order_package_id', $orderPackageId)->get();
@@ -234,7 +345,7 @@ class OrderService implements IOrderService
                     $item->total
                 ));
             }
-            $entity = OrderPackageModel::where('customer_id', $customerId)->get();
+            $entity = OrderPackageModel::where('customer_id', $customerId)->where('is_deleted', false)->get();
             return $entity->map(fn($item) => new OrderPackageResponse(
                 $item->id,
                 $item->productCount(),
@@ -245,9 +356,52 @@ class OrderService implements IOrderService
         });
     }
 
-    public function getDiscount($orderPackageId)
+    public function cancelOrderPackage($customerId, $orderPackageId)
     {
-        return Cache::remember("order_discount", 60, function () use ($orderPackageId) {
+        try {
+            DB::beginTransaction();
+
+            $orderPackage = OrderPackageModel::where('customer_id', $customerId)
+                ->where('id', $orderPackageId)
+                ->where('is_deleted', false)
+                ->first();
+
+            if (!$orderPackage) {
+                throw new ApiException("Sipariş paketi bulunamadı");
+            }
+
+            $orders = OrderModel::where('order_package_id', $orderPackageId)->get();
+
+            foreach ($orders as $order) {
+                $product = ProductModel::find($order->product_id);
+                $product->stock += $order->quantity;
+                $product->save();
+
+                OrderDiscountModel::where('order_id', $order->id)->delete();
+                $order->delete();
+            }
+
+            $orderPackage->is_deleted = true;
+            $orderPackage->save();
+
+            CustomerModel::where('id', $customerId)->increment('balance', $orderPackage->total);
+
+            $this->clearCache();
+
+            DB::commit();
+        } catch (\Exception $e) {
+            throw new ApiException($e->getMessage());
+        }
+    }
+
+
+    public function getDiscount($customerId, $orderPackageId)
+    {
+        $cacheKey = sprintf(
+            "order_discount:%s",
+            $orderPackageId
+        );
+        return Cache::remember($cacheKey, 60, function () use ($orderPackageId) {
             $orders = OrderModel::where('order_package_id', $orderPackageId)->pluck('id')->toArray();
             $entity = OrderDiscountModel::where('order_id',  $orders)->get();
             return $entity->map(fn($item) => new OrderDiscountResponse(
