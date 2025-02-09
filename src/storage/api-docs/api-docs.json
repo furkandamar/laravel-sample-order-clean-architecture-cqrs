@@ -95,9 +95,9 @@
                 "operationId": "b2fecac9dec0cdfa315b817cbb0066e0",
                 "parameters": [
                     {
-                        "name": "order_id",
+                        "name": "order_package_id",
                         "in": "query",
-                        "description": "Order UUID",
+                        "description": "Order Package UUID",
                         "required": false
                     }
                 ],
@@ -154,6 +154,35 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "/App/Models/OrderModel"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/discount": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "İndirim listesini döner",
+                "operationId": "c91f73c9843cd7f39312c0d778127fed",
+                "parameters": [
+                    {
+                        "name": "order_package_id",
+                        "in": "path",
+                        "description": "Order Package UUID",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sipariş listesi hazırlandı",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "/App/Models/OrderDiscountModel"
                                 }
                             }
                         }
