@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ApiResponse;
+use App\Http\Requests\LoginRequest;
 use App\Infrastructure\Handlers\Commands\GetMeQuery;
 use App\Infrastructure\Handlers\Commands\LoginCommand;
 use App\Infrastructure\Handlers\HandlerBus;
@@ -48,8 +49,9 @@ class AuthController extends Controller
      *     )
      * )
      */
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
+        $request->validated();
         return ApiResponse::success(
             $this->handlerBus->handle(new LoginCommand($request->email, $request->password))
         );

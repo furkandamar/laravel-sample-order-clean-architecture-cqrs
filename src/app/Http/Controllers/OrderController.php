@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ApiResponse;
+use App\Http\Requests\CreateOrderRequest;
 use App\Infrastructure\Handlers\Commands\CreateOrderCommand;
 use App\Infrastructure\Handlers\HandlerBus;
 use Illuminate\Http\Request;

@@ -25,7 +25,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseURL}}/products?category_id=9e2b2fdf-345d-470e-a53d-47a3e0d1718d",
+							"raw": "{{baseURL}}/products?category_id=9e2c409f-235a-49f5-9592-79e4625d0cfd",
 							"host": [
 								"{{baseURL}}"
 							],
@@ -35,7 +35,7 @@
 							"query": [
 								{
 									"key": "category_id",
-									"value": "9e2b2fdf-345d-470e-a53d-47a3e0d1718d"
+									"value": "9e2c409f-235a-49f5-9592-79e4625d0cfd"
 								}
 							]
 						}
@@ -46,14 +46,7 @@
 					"name": "Get Categories",
 					"request": {
 						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
+							"type": "noauth"
 						},
 						"method": "GET",
 						"header": [],
@@ -181,18 +174,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseURL}}/orders?order_package_id=9e2b309a-8b27-44ce-a72d-83c251429767",
+							"raw": "{{baseURL}}/orders",
 							"host": [
 								"{{baseURL}}"
 							],
 							"path": [
 								"orders"
-							],
-							"query": [
-								{
-									"key": "order_package_id",
-									"value": "9e2b309a-8b27-44ce-a72d-83c251429767"
-								}
 							]
 						}
 					},
@@ -215,7 +202,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n    {\n        \"product_id\": \"9e2b2fdf-4f9c-4803-b24e-93ad13efaf01\",\n        \"amount\": 29\n    },\n    {\n        \"product_id\": \"9e2b2fdf-54d2-4311-aed3-107a88a78e8e\",\n        \"amount\": 50\n    },\n    {\n        \"product_id\": \"9e2b2fdf-4f34-4ef7-92a7-f536b880c4b0\",\n        \"amount\": 10\n    }\n]",
+							"raw": "[\n    {\n        \"product_id\": \"9e2c409f-2508-4213-b679-5c1686001ac8\",\n        \"amount\": 20\n    },\n    {\n        \"product_id\" : \"9e2c409f-26cc-4f23-8fb6-8beda0dc2966\",\n        \"amount\" : 4\n    }\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -250,12 +237,78 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseURL}}/discount",
+							"raw": "{{baseURL}}/discount/9e2b309a-8b27-44ce-a72d-83c251429767",
 							"host": [
 								"{{baseURL}}"
 							],
 							"path": [
-								"discount"
+								"discount",
+								"9e2b309a-8b27-44ce-a72d-83c251429767"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel Order",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/orders/9e2c2c56-eacf-43b6-b1f3-84bbe9ca2058",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"orders",
+								"9e2c2c56-eacf-43b6-b1f3-84bbe9ca2058"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Order",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"product_id\": \"9e2c409f-2508-4213-b679-5c1686001ac8\",\n        \"amount\": 20\n    },\n    {\n        \"product_id\" : \"9e2c409f-26cc-4f23-8fb6-8beda0dc2966\",\n        \"amount\" : 4\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/orders/9e2c40fc-7233-4598-8c50-21fce30c3977",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"orders",
+								"9e2c40fc-7233-4598-8c50-21fce30c3977"
 							]
 						}
 					},
