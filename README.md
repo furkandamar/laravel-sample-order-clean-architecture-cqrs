@@ -15,7 +15,7 @@ Laravel framework, hali hazırda MVC mimarisini kullanır. İhtiyaca göre MVC m
 Örnek kullanım & test için repo içersinde "PostmanSample.json" dosyası üzerinden postman koleksiyonu indirebilir veya http://localhost:8182/api/documentation üzerinden Swagger-ui testi yapabilirsiniz.
 
 #### Veritabanı Şeması
-![Veritabanı Şeması](../db-schema.jpg)
+![Veritabanı Şeması](https://raw.githubusercontent.com/furkandamar/laravel-sample-order-clean-architecture-cqrs/refs/heads/main/db-schema.jpg)
 
 
 ### CQRS Nedir?
@@ -75,7 +75,7 @@ NoSQL veritabanları kategorisinde yer alan, anahtar-değer (key-value) modelini
 
 
 ## Proje Akışı
-![akis](../process.jpg)
+![akis](https://raw.githubusercontent.com/furkandamar/laravel-sample-order-clean-architecture-cqrs/refs/heads/main/process.jpg)
 
 Proje akışı temelde şemadaki gibi işler. Kullanıcı isteği gönderir, controller kabul eder, CQRS handler den geçip servis katmanına erişir, servisde gerekli işlemler yapıldıktan sonra çıktı olarak döner (Response).
 
