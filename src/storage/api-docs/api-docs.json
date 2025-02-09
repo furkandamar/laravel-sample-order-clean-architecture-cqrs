@@ -1,0 +1,243 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Sipariş API",
+        "description": "Sipariş API belgelendirmesi",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "/api"
+        }
+    ],
+    "paths": {
+        "/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Oturum işlemleri",
+                "description": "Oturum açma işlemi",
+                "operationId": "login",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "mail@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "******"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "\\Illuminate\\Http\\JsonResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    }
+                }
+            }
+        },
+        "/me": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Kullanıcı bilgisi",
+                "operationId": "me",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "\\App\\Models\\User"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    }
+                }
+            }
+        },
+        "/orders": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Yeni sipariş oluştur",
+                "operationId": "b2fecac9dec0cdfa315b817cbb0066e0",
+                "parameters": [
+                    {
+                        "name": "order_id",
+                        "in": "query",
+                        "description": "Order UUID",
+                        "required": false
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sipariş listesi hazırlandı",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "/App/Models/OrderPackageModel"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Yeni sipariş oluştur",
+                "operationId": "3e58ca2cf49e0b15f8f6b9719582b099",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "required": [
+                                        "product_id",
+                                        "amount"
+                                    ],
+                                    "properties": {
+                                        "product_id": {
+                                            "type": "string"
+                                        },
+                                        "amount": {
+                                            "type": "number",
+                                            "format": "decimal",
+                                            "example": 0
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Sipariş başarıyla oluşturuldu",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "/App/Models/OrderModel"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/categories": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Kategoriler",
+                "description": "Kategori listesini getirir",
+                "operationId": "getCategories",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "App/Models/CategoryModel"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    }
+                }
+            }
+        },
+        "/products": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Ürün listesi",
+                "description": "Returns a list of products",
+                "operationId": "getProducts",
+                "parameters": [
+                    {
+                        "name": "category_id",
+                        "in": "query",
+                        "description": "Category UUID",
+                        "required": false
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "/App/Models/ProductModel"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Orders",
+            "description": "Sipariş işlemleri"
+        },
+        {
+            "name": "Auth",
+            "description": "Auth"
+        },
+        {
+            "name": "Products",
+            "description": "Products"
+        }
+    ]
+}
